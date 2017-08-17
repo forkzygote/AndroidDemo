@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--font size-->
+    <dimen name="font_small">12sp</dimen>
+
+    <!--typical spacing between two views-->
+
+    <!--typical size of view-->
+</resources>

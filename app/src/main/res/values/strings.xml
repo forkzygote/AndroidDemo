@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">PixabayProj</string>
+
+    <string name="main_go">go</string>
+    <string name="main_search_for">search for...</string>
+
+    <string name="user">User: %s</string>
+    <string name="tags">Tags: %s</string>
+    <string name="likes">Likes: %d</string>
+    <string name="favorite">Favorites: %d</string>
+    <string name="comments">Comments: %d</string>
+    <string name="img_description_thumbnail">thumbnail image</string>
+    <string name="img_description_detail">a bigger image</string>
+
+</resources>
