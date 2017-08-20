@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.VisibleForTesting;
+import android.support.test.espresso.IdlingResource;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -15,7 +17,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import de.ying.pixabayproj.Pixabay;
@@ -29,6 +30,7 @@ import de.ying.pixabayproj.injection.module.PixabayModule;
 import de.ying.pixabayproj.mvp.Presenter.MainPresenter;
 import de.ying.pixabayproj.mvp.View.MainView;
 import de.ying.pixabayproj.utils.Constants;
+import de.ying.pixabayproj.utils.EspressoIdlingResource;
 import de.ying.pixabayproj.utils.PreferenceUtil;
 
 public class MainActivity extends BaseMvpActivity<MainPresenter> implements MainView {
@@ -73,7 +75,8 @@ public class MainActivity extends BaseMvpActivity<MainPresenter> implements Main
         mButtonGo = (Button) findViewById(R.id.go_btn);
         mButtonGo.setOnClickListener(view -> {
             queryStr = String.valueOf(queryEditText.getText());
-            mPresenter.getImage(setSearchMap(queryStr),this);  // query search
+            EspressoIdlingResource.increment();
+            mPresenter.getImage(queryStr,this);  // query search
         });
     }
 
@@ -82,18 +85,12 @@ public class MainActivity extends BaseMvpActivity<MainPresenter> implements Main
         super.onResume();
         if(queryStr==null) {
             queryStr = "fruit";
-            mPresenter.getImage(setSearchMap(queryStr),this);  // query search
+            EspressoIdlingResource.increment();
+            mPresenter.getImage(queryStr,this);  // query search
         }
     }
 
-    private HashMap<String, String> setSearchMap(String q){
-        HashMap<String, String> map = new HashMap<>();
-        map.put("image_type", "all");
-        map.put("page", "1");
-        map.put("q", q);
-        map.put("key", Constants.API_KEY);
-        return map;
-    }
+
 
     /**
      * Method serve as Success Callback
@@ -106,6 +103,7 @@ public class MainActivity extends BaseMvpActivity<MainPresenter> implements Main
         hitList.addAll(hits);
         mAdapter.notifyDataSetChanged();
         PreferenceUtil.setString(Pixabay.getContext(), Constants.SHARED_PREFERENCES, Constants.CACHE, message.hits2JSON().toString());
+        EspressoIdlingResource.decrement();
     }
 
     /**
@@ -115,6 +113,7 @@ public class MainActivity extends BaseMvpActivity<MainPresenter> implements Main
     @Override
     public void getImageFail(Throwable e) {
         showCache();
+        EspressoIdlingResource.decrement();
     }
 
     /**
@@ -192,10 +191,15 @@ public class MainActivity extends BaseMvpActivity<MainPresenter> implements Main
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
         queryStr = savedInstanceState.getString(QUERY);
-        mPresenter.getImage(setSearchMap(queryStr),this);  // default search
+        mPresenter.getImage(queryStr,this);  // default search
         if(savedInstanceState.getBoolean(SHOW_DIALOG)){
             showDetailDialog(savedInstanceState.getInt(HIT_POSITION, 0));
         }
+    }
+
+    @VisibleForTesting
+    public IdlingResource getCountingIdlingResource() {
+        return EspressoIdlingResource.getIdlingResource();
     }
 }
 
